@@ -1,8 +1,9 @@
 'use strict';
 
-var gulp = require('gulp'),
+var pkg = require('./package'),
+    gulp = require('gulp'),
     rigger = require('gulp-rigger'),
-    googleCdn = require('gulp-google-cdn'),
+    //googleCdn = require('gulp-google-cdn'),
     uglify = require('gulp-uglify'),
     sass = require('gulp-sass'),
     autoprefixer = require('gulp-autoprefixer'),
@@ -32,6 +33,9 @@ var path = {
         images: 'build/images/',
         fonts: 'build/fonts/'
     },
+    ignore: {
+        html: '!app/templates/*.html'
+    },
     watch: {
         html: 'app/**/*.html',
         css: 'app/css/*.css',
@@ -43,31 +47,43 @@ var path = {
     clean: 'build/*'
 };
 
+var setting = {
+    webserver: {
+        host: 'localhost',
+        server: {
+            baseDir: "./build"
+        },
+        tunnel: true,
+        port: 9000,
+        logPrefix: pkg.name
+    },
+    ftp: {
+        host: 'zoom.net.ua',
+        user: 'deploy',
+        password: 'AwxTZQtR',
+        parallel: 10
+    }
+};
+
 /***** misc *****/
 
 gulp.task('default', ['webserver', 'watch']);
-
-gulp.task('webserver', function () {
-    browserSync({
-        logPrefix: "zoom.net.ua",
-        server: { baseDir: "./build" },
-        tunnel: true,
-        host: 'localhost',
-        port: 9000
-    });
-});
 
 gulp.task('clean', function() {
     return gulp.src(path.clean, { read: false })
         .pipe(clean({ showLog: true }));
 });
 
+gulp.task('webserver', function () {
+    browserSync(setting.webserver);
+});
+
 /***** html *****/
 
 gulp.task('html:build', function() {
-    gulp.src([path.src.html, '!app/templates/*.html'])
+    gulp.src([path.src.html, path.ignore.html])
         .pipe(rigger())
-        .pipe(googleCdn(require('./bower.json')))
+        //.pipe(googleCdn(require('./bower.json')))
         .pipe(gulp.dest(path.build.html))
         .pipe(reload({stream: true}));
 });
@@ -78,7 +94,7 @@ gulp.task('styles:sass', function() {
     return gulp.src(path.src.sass)
         .pipe(sass())
         .pipe(autoprefixer({
-            'browsers': 'last 2 versions',
+            'browsers': 'last 10 versions',
             cascade: false
         }))
         .pipe(cssbeautify())
@@ -115,10 +131,7 @@ gulp.task('js:mainfiles', function() {
 
 gulp.task('images:build', function () {
     gulp.src(path.src.images)
-        .pipe(imagemin({
-            progressive: true,
-            interlaced: true
-        },{ verbose: true }))
+        .pipe(imagemin())
         .pipe(gulp.dest(path.build.images))
         .pipe(reload({stream: true}));
 });
@@ -143,12 +156,7 @@ gulp.task('build', [
 /***** deploy *****/
 
 gulp.task('ftp:deploy', function() {
-    var conn = ftp.create({
-        'host': 'zoom.net.ua',
-        'user': 'deploy',
-        'password': 'AwxTZQtR',
-        'parallel': 10
-    });
+    var conn = ftp.create(setting.ftp);
 
     return gulp.src([
         'build/**/*'
