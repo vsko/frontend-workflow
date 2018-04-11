@@ -84,31 +84,31 @@ gulp.task('html:build', ['html:minify']);
 
 gulp.task('styles:sass', function() {
     return gulp.src(path.src.sass)
-        .pipe(cached('styles:sass'))
+        .pipe(cached('scripts'))
         //.pipe(sourcemaps.init())
         .pipe(sass())
         .pipe(autoprefixer({'browsers': 'last 10 versions', cascade: false}))
         .pipe(cssmin())
         //.pipe(sourcemaps.write())
-        .pipe(remember('styles:sass'))
+        .pipe(remember('scripts'))
         .pipe(gulp.dest('app/css/'))
         .pipe(gulp.dest(path.build.styles));
 });
 
 gulp.task('styles:minify', ['styles:sass'], function() {
     return gulp.src(path.src.css)
-        .pipe(cached('styles:minify'))
+        .pipe(cached('scripts'))
         .pipe(cssmin())
-        .pipe(remember('styles:minify'))
+        .pipe(remember('scripts'))
         //.pipe(rename({suffix: '.min'}))
         .pipe(gulp.dest(path.build.styles));
 });
 
 gulp.task('styles:beautify', ['styles:sass'], function() {
     return gulp.src(path.src.css)
-        .pipe(cached('styles:beautify'))
+        .pipe(cached('scripts'))
         .pipe(cssbeautify())
-        .pipe(remember('styles:beautify'))
+        .pipe(remember('scripts'))
         .pipe(gulp.dest(path.build.styles));
 });
 
@@ -118,13 +118,12 @@ gulp.task('styles:build', ['styles:minify']);
 
 gulp.task('scripts:build', function() {
     return gulp.src(path.src.js)
-        //.pipe(cached('scripts:build'))
+        .pipe(cached('scripts'))
         .pipe(rigger())
-        //.on('error', function(err) { console.log(err) })
         //.pipe(sourcemaps.init())
-        .pipe(uglify())
+        //.pipe(uglify())
         //.pipe(sourcemaps.write())
-        //.pipe(remember('scripts:build'))
+        .pipe(remember('scripts'))
         .pipe(concat('app.js'))
         .pipe(gulp.dest(path.build.scripts));
 });
@@ -181,7 +180,8 @@ gulp.task('clean', function() {
 
 gulp.task('webserver', function () {
     browserSync.init(setting.webserver);
-    browserSync.watch(path.build.match).on('change', browserSync.reload);
+    browserSync.watch(path.build.match)
+        .on('change', browserSync.reload);
 });
 
 /******* watch *******/
