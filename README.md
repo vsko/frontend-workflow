@@ -6,7 +6,7 @@ $ bower i
 
 ## Run gulp
 ```
-$ gulp build
+$ gulp up
 $ gulp
 ```
 
